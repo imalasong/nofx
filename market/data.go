@@ -6,8 +6,10 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Data 市场数据结构
@@ -61,6 +63,21 @@ type Kline struct {
 	Close     float64
 	Volume    float64
 	CloseTime int64
+}
+
+// 创建全局的 HTTP 客户端
+var httpClient *http.Client
+
+func init() {
+	proxyURL, _ := url.Parse("http://localhost:7890")
+	transport := &http.Transport{
+		Proxy: http.ProxyURL(proxyURL),
+	}
+
+	httpClient = &http.Client{
+		Transport: transport,
+		Timeout:   time.Second * 30, // 设置超时
+	}
 }
 
 // Get 获取指定代币的市场数据
@@ -141,7 +158,7 @@ func getKlines(symbol, interval string, limit int) ([]Kline, error) {
 	url := fmt.Sprintf("https://fapi.binance.com/fapi/v1/klines?symbol=%s&interval=%s&limit=%d",
 		symbol, interval, limit)
 
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +407,7 @@ func calculateLongerTermData(klines []Kline) *LongerTermData {
 func getOpenInterestData(symbol string) (*OIData, error) {
 	url := fmt.Sprintf("https://fapi.binance.com/fapi/v1/openInterest?symbol=%s", symbol)
 
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -423,7 +440,7 @@ func getOpenInterestData(symbol string) (*OIData, error) {
 func getFundingRate(symbol string) (float64, error) {
 	url := fmt.Sprintf("https://fapi.binance.com/fapi/v1/premiumIndex?symbol=%s", symbol)
 
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return 0, err
 	}

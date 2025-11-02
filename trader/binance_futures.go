@@ -34,7 +34,7 @@ func NewFuturesTrader(apiKey, secretKey string, testnet bool) *FuturesTrader {
 	if testnet {
 		futures.UseTestnet = true
 	}
-	client := futures.NewClient(apiKey, secretKey)
+	client := futures.NewProxiedClient(apiKey, secretKey ,"http://localhost:7890")
 	return &FuturesTrader{
 		client:        client,
 		cacheDuration: 15 * time.Second, // 15秒缓存
@@ -244,6 +244,7 @@ func (t *FuturesTrader) OpenLong(symbol string, quantity float64, leverage int) 
 	order, err := t.client.NewCreateOrderService().
 		Symbol(symbol).
 		Side(futures.SideTypeBuy).
+		TimeInForce(futures.TimeInForceTypeGTC).
 		PositionSide(futures.PositionSideTypeLong).
 		Type(futures.OrderTypeMarket).
 		Quantity(quantityStr).

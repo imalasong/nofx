@@ -78,6 +78,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             requiresOTP: true,
             message: data.message,
           };
+        } else {
+          const userInfo = { id: data.user_id, email: data.email };
+          setToken(data.token);
+          setUser(userInfo);
+          localStorage.setItem('auth_token', data.token);
+          localStorage.setItem('auth_user', JSON.stringify(userInfo));
+
+          // 跳转到首页
+          window.history.pushState({}, '', '/');
+          window.dispatchEvent(new PopStateEvent('popstate'));
+          return { success: true, message: data.message };
         }
       } else {
         return { success: false, message: data.error };

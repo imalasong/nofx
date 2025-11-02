@@ -118,7 +118,7 @@ func GetFullDecisionWithCustomPrompt(ctx *Context, mcpClient *mcp.Client, custom
 	}
 
 	decision.Timestamp = time.Now()
-	decision.UserPrompt = userPrompt // 保存输入prompt
+	decision.UserPrompt = systemPrompt+"<hr/>"+userPrompt // 保存输入prompt
 	return decision, nil
 }
 

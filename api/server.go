@@ -932,7 +932,7 @@ func (s *Server) handleLatestDecisions(c *gin.Context) {
 		return
 	}
 
-	records, err := trader.GetDecisionLogger().GetLatestRecords(5)
+	records, err := trader.GetDecisionLogger().GetLatestRecords(50)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": fmt.Sprintf("获取决策日志失败: %v", err),
@@ -1297,13 +1297,29 @@ func (s *Server) handleLogin(c *gin.Context) {
 		return
 	}
 
-	// 返回需要OTP验证的状态
+
+	// 生成JWT token
+	token, err := auth.GenerateJWT(user.ID, user.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "生成token失败"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
+		"token":   token,
 		"user_id": user.ID,
 		"email":   user.Email,
-		"message": "请输入Google Authenticator验证码",
-		"requires_otp": true,
+		"message": "登录成功",
 	})
+
+	//
+	//// 返回需要OTP验证的状态
+	//c.JSON(http.StatusOK, gin.H{
+	//	"user_id": user.ID,
+	//	"email":   user.Email,
+	//	"message": "请输入Google Authenticator验证码",
+	//	"requires_otp": true,
+	//})
 }
 
 // handleVerifyOTP 验证OTP并完成登录
